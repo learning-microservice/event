@@ -13,10 +13,10 @@ type Event struct {
 	id             ID
 	category       Category
 	contents       Contents
-	startAt        time.Time
-	endAt          time.Time
+	startAt        StartAt
+	endAt          EndAt
 	isPrivated     bool
-	publishedAt    time.Time
+	publishedAt    PublishedAt
 	assignments    Assignments
 	bookings       Bookings
 	assignmentRule AssignmentRule
@@ -37,11 +37,11 @@ func (e *Event) Contents() Contents {
 	return e.contents
 }
 
-func (e *Event) StartAt() time.Time {
+func (e *Event) StartAt() StartAt {
 	return e.startAt
 }
 
-func (e *Event) EndAt() time.Time {
+func (e *Event) EndAt() EndAt {
 	return e.endAt
 }
 
@@ -49,14 +49,16 @@ func (e *Event) IsPrivated() bool {
 	return e.isPrivated
 }
 
-func (e *Event) PublishedAt() time.Time {
+func (e *Event) PublishedAt() PublishedAt {
 	return e.publishedAt
 }
 
 func (e *Event) AssigneeIDs() AssigneeIDs {
 	var assigneeIDs AssigneeIDs
 	for _, assign := range e.assignments {
-		assigneeIDs = append(assigneeIDs, assign.assigneeID)
+		if !assign.isCanceled {
+			assigneeIDs = append(assigneeIDs, assign.assigneeID)
+		}
 	}
 	return assigneeIDs
 }
@@ -64,7 +66,9 @@ func (e *Event) AssigneeIDs() AssigneeIDs {
 func (e *Event) AttendeeIDs() AttendeeIDs {
 	var attendeeIDs AttendeeIDs
 	for _, book := range e.bookings {
-		attendeeIDs = append(attendeeIDs, book.attendeeID)
+		if !book.isCanceled {
+			attendeeIDs = append(attendeeIDs, book.attendeeID)
+		}
 	}
 	return attendeeIDs
 }
@@ -79,15 +83,6 @@ func (e *Event) Assign(assigneeID AssigneeID) (err error) {
 	return //e.bookingRule.validate(len(e.bookings))
 }
 
-func (e *Event) AssignAll(assigneeIDs []AssigneeID) (err error) {
-	for _, aid := range assigneeIDs {
-		if err = e.Assign(aid); err != nil {
-			return
-		}
-	}
-	return
-}
-
 func (e *Event) Book(attendeeID AttendeeID) (err error) {
 	// add attendee
 	if err = e.bookings.add(e.id, attendeeID); err != nil {
@@ -96,15 +91,6 @@ func (e *Event) Book(attendeeID AttendeeID) (err error) {
 
 	// booking rule check
 	return e.bookingRule.validate(len(e.bookings))
-}
-
-func (e *Event) BookAll(attendeeIDs []AttendeeID) (err error) {
-	for _, aid := range attendeeIDs {
-		if err = e.Book(aid); err != nil {
-			return
-		}
-	}
-	return
 }
 
 ////////////////////////////////////////////
@@ -116,10 +102,20 @@ type (
 	Category    string
 	Content     string
 	Contents    []Content
+	StartAt     struct{ time.Time }
+	EndAt       struct{ time.Time }
 	AssigneeID  string
 	AssigneeIDs []AssigneeID
 	AttendeeID  string
 	AttendeeIDs []AttendeeID
+
+	PublishedAt       struct{ time.Time }
+	MaxAssignees      uint
+	MinAssignees      uint
+	MaxAttendees      uint
+	MinAttendees      uint
+	BookingDeadlineAt struct{ time.Time }
+	CancelDeadlineAt  struct{ time.Time }
 )
 
 func (c Contents) JSON() []byte {
@@ -138,16 +134,16 @@ func (c Contents) JSON() []byte {
 func New(
 	category Category,
 	contents Contents,
-	start time.Time,
-	end time.Time,
+	start StartAt,
+	end EndAt,
 	isPrivated bool,
-	publishedAt time.Time,
-	maxAssignees uint,
-	minAssignees uint,
-	maxAttendees uint,
-	minAttendees uint,
-	bookingDeadlineAt time.Time,
-	cancelDeadlineAt time.Time,
+	minAssignees MinAssignees,
+	maxAssignees MaxAssignees,
+	minAttendees MinAttendees,
+	maxAttendees MaxAttendees,
+	publishedAt PublishedAt,
+	bookingDeadlineAt BookingDeadlineAt,
+	cancelDeadlineAt CancelDeadlineAt,
 ) *Event {
 	return &Event{
 		category:    category,

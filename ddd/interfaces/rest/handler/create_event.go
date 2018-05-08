@@ -27,8 +27,8 @@ func MakeCreateEventEndpoint(service usecase.CreateEvent) echox.HandlerFunc {
 		req := struct {
 			Category   event.Category    `json:"category"     binding:"required"`
 			Contents   event.Contents    `json:"contents"`
-			StartAt    time.Time         `json:"start_at"     binding:"required"`
-			EndAt      time.Time         `json:"end_at"       binding:"required,gtfield=StartAt"`
+			StartAt    event.StartAt     `json:"start_at"     binding:"required"`
+			EndAt      event.EndAt       `json:"end_at"       binding:"required,gtfield=StartAt"`
 			IsPrivated bool              `json:"is_privated"`
 			Assignees  event.AssigneeIDs `json:"assignees"    binding:"required,min=1"`
 		}{}
@@ -37,19 +37,25 @@ func MakeCreateEventEndpoint(service usecase.CreateEvent) echox.HandlerFunc {
 		}
 
 		output, err := service.Create(&usecase.CreateEventInput{
-			Category:          req.Category,
-			Contents:          req.Contents,
-			StartAt:           req.StartAt,
-			EndAt:             req.EndAt,
-			IsPrivated:        req.IsPrivated,
-			PublishedAt:       time.Now(),
-			Assignees:         req.Assignees,
-			MinAssignees:      1,
-			MaxAssignees:      1,
-			MinAttendees:      1,
-			MaxAttendees:      1,
-			BookingDeadlineAt: req.StartAt.Add(-10 * time.Minute),
-			CancelDeadlineAt:  req.StartAt.Add(-30 * time.Minute),
+			Category:     req.Category,
+			Contents:     req.Contents,
+			StartAt:      req.StartAt,
+			EndAt:        req.EndAt,
+			IsPrivated:   req.IsPrivated,
+			Assignees:    req.Assignees,
+			MinAssignees: 1,
+			MaxAssignees: 1,
+			MinAttendees: 1,
+			MaxAttendees: 1,
+			PublishedAt: event.PublishedAt{
+				time.Now(),
+			},
+			BookingDeadlineAt: event.BookingDeadlineAt{
+				req.StartAt.Add(-10 * time.Minute),
+			},
+			CancelDeadlineAt: event.CancelDeadlineAt{
+				req.StartAt.Add(-30 * time.Minute),
+			},
 		})
 		if err != nil {
 			return c.BadRequest(err)
@@ -59,8 +65,8 @@ func MakeCreateEventEndpoint(service usecase.CreateEvent) echox.HandlerFunc {
 			EventID    event.ID          `json:"event_id"`
 			Category   event.Category    `json:"category"`
 			Contents   event.Contents    `json:"contents,omitempty"`
-			StartAt    time.Time         `json:"start_at"`
-			EndAt      time.Time         `json:"end_at"`
+			StartAt    event.StartAt     `json:"start_at"`
+			EndAt      event.EndAt       `json:"end_at"`
 			IsPrivated bool              `json:"is_privated"`
 			Assignees  event.AssigneeIDs `json:"assignees,omitempty"`
 			Attendees  event.AttendeeIDs `json:"attendees,omitempty"`

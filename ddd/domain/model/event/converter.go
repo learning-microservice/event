@@ -39,23 +39,23 @@ func (*Converter) ConvertToEntity(record *record.Event) *Event {
 		id:          ID(record.ID),
 		category:    Category(record.Category),
 		contents:    contents,
-		startAt:     record.StartAt,
-		endAt:       record.EndAt,
+		startAt:     StartAt{record.StartAt},
+		endAt:       EndAt{record.EndAt},
 		isPrivated:  record.IsPrivated,
-		publishedAt: record.PublishedAt,
+		publishedAt: PublishedAt{record.PublishedAt},
 		assignments: assignments,
 		bookings:    bookings,
 		assignmentRule: AssignmentRule{
-			minAssignees: record.MinAssignees,
-			maxAssignees: record.MaxAssignees,
+			minAssignees: MinAssignees(record.MinAssignees),
+			maxAssignees: MaxAssignees(record.MaxAssignees),
 		},
 		bookingRule: BookingRule{
-			minAttendees: record.MinAttendees,
-			maxAttendees: record.MaxAttendees,
-			deadline:     record.BookingDeadlineAt,
+			minAttendees: MinAttendees(record.MinAttendees),
+			maxAttendees: MaxAttendees(record.MaxAttendees),
+			deadline:     BookingDeadlineAt{record.BookingDeadlineAt},
 		},
 		cancelRule: CancelRule{
-			deadline: record.CancelDeadlineAt,
+			deadline: CancelDeadlineAt{record.CancelDeadlineAt},
 		},
 	}
 }
@@ -70,33 +70,33 @@ func (*Converter) ConvertToRecord(evt *Event) *record.Event {
 		cancels       []record.Cancel
 	)
 	for _, assign := range evt.assignments {
-		if assign.IsCanceled() {
+		if assign.isCanceled {
 			unassignments = append(unassignments, record.Unassignment{
-				AssignmentID: assign.ID(),
+				AssignmentID: assign.id,
 				UnassignedAt: now,
 				Reason:       "none",
 			})
 		} else {
 			assignments = append(assignments, record.Assignment{
-				ID:         assign.ID(),
+				ID:         assign.id,
 				EventID:    eventID,
-				AssigneeID: string(assign.AssigneeID()),
+				AssigneeID: string(assign.assigneeID),
 				AssignedAt: now,
 			})
 		}
 	}
 	for _, book := range evt.bookings {
-		if book.IsCanceled() {
+		if book.isCanceled {
 			cancels = append(cancels, record.Cancel{
-				BookingID:  book.ID(),
+				BookingID:  book.id,
 				CanceledAt: now,
 				Reason:     "none",
 			})
 		} else {
 			bookings = append(bookings, record.Booking{
-				ID:         book.ID(),
+				ID:         book.id,
 				EventID:    eventID,
-				AttendeeID: string(book.AttendeeID()),
+				AttendeeID: string(book.attendeeID),
 				BookedAt:   now,
 			})
 		}
@@ -106,16 +106,16 @@ func (*Converter) ConvertToRecord(evt *Event) *record.Event {
 		ID:                eventID,
 		Category:          string(evt.category),
 		Contents:          evt.contents.JSON(),
-		StartAt:           evt.startAt,
-		EndAt:             evt.endAt,
+		StartAt:           evt.startAt.Time,
+		EndAt:             evt.endAt.Time,
 		IsPrivated:        evt.isPrivated,
-		PublishedAt:       evt.publishedAt,
-		MaxAssignees:      evt.assignmentRule.maxAssignees,
-		MinAssignees:      evt.assignmentRule.minAssignees,
-		MaxAttendees:      evt.bookingRule.maxAttendees,
-		MinAttendees:      evt.bookingRule.minAttendees,
-		BookingDeadlineAt: evt.bookingRule.deadline,
-		CancelDeadlineAt:  evt.cancelRule.deadline,
+		PublishedAt:       evt.publishedAt.Time,
+		MaxAssignees:      uint(evt.assignmentRule.maxAssignees),
+		MinAssignees:      uint(evt.assignmentRule.minAssignees),
+		MaxAttendees:      uint(evt.bookingRule.maxAttendees),
+		MinAttendees:      uint(evt.bookingRule.minAttendees),
+		BookingDeadlineAt: evt.bookingRule.deadline.Time,
+		CancelDeadlineAt:  evt.cancelRule.deadline.Time,
 		Assignments:       assignments,
 		Unassignments:     unassignments,
 		Bookings:          bookings,

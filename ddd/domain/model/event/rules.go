@@ -9,14 +9,14 @@ import (
 ////////////////////////////////////////////
 
 type AssignmentRule struct {
-	minAssignees uint
-	maxAssignees uint
+	minAssignees MinAssignees
+	maxAssignees MaxAssignees
 	deadline     time.Time
 }
 
 func (ar *AssignmentRule) validate(assigneeCount int) error {
 	// アサイン上限枠チェック
-	if ar.maxAssignees < uint(assigneeCount) {
+	if uint(ar.maxAssignees) < uint(assigneeCount) {
 		return errorBookingFailure("maximum number of assignees is reached")
 	}
 	// アサイン締切時間チェック
@@ -31,14 +31,14 @@ func (ar *AssignmentRule) validate(assigneeCount int) error {
 ////////////////////////////////////////////
 
 type BookingRule struct {
-	minAttendees uint
-	maxAttendees uint
-	deadline     time.Time
+	minAttendees MinAttendees
+	maxAttendees MaxAttendees
+	deadline     BookingDeadlineAt
 }
 
 func (br *BookingRule) validate(attendeeCount int) error {
 	// 予約上限枠チェック
-	if br.maxAttendees < uint(attendeeCount) {
+	if uint(br.maxAttendees) < uint(attendeeCount) {
 		return errorBookingFailure("maximum number of attendees is reached")
 	}
 	// 予約締切時間チェック
@@ -53,7 +53,7 @@ func (br *BookingRule) validate(attendeeCount int) error {
 ////////////////////////////////////////////
 
 type CancelRule struct {
-	deadline time.Time
+	deadline CancelDeadlineAt
 }
 
 func (cr *CancelRule) validate() error {
