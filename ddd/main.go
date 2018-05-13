@@ -8,7 +8,6 @@ import (
 	"github.com/learning-microservice/core/validator"
 	"github.com/learning-microservice/event/ddd/application/usecase"
 	"github.com/learning-microservice/event/ddd/infrastructure/mysql"
-	"github.com/learning-microservice/event/ddd/infrastructure/mysql/record"
 	"github.com/learning-microservice/event/ddd/interfaces/rest/handler"
 	"github.com/tylerb/graceful"
 )
@@ -16,12 +15,10 @@ import (
 func main() {
 	os.Setenv("DB_ADDRESS", "root:password@/localdb?charset=utf8&parseTime=True&loc=Local")
 	os.Setenv("DB_DEBUG", "true")
+	os.Setenv("DB_AUTO_MIGRATE", "true")
 
 	// Mysql Transaction Context
-	txContext := mysql.NewTransactionContext()
-
-	// Migration
-	record.Migration()
+	txContext := mysql.NewTxManager()
 
 	// repositories
 	eventRepos := mysql.NewEventRepositoryOnMySQL()

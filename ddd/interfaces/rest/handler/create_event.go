@@ -5,7 +5,7 @@ import (
 
 	"github.com/learning-microservice/core/echox"
 	"github.com/learning-microservice/event/ddd/application/usecase"
-	"github.com/learning-microservice/event/ddd/domain/model/event"
+	"github.com/learning-microservice/event/ddd/domain/model/events"
 )
 
 /*
@@ -15,70 +15,59 @@ curl -XPOST \
   -d '
   {
     "category": "lesson",
-    "contents": ["business", "free trial"],
+    "tags": ["business", "free trial"],
     "start_at": "2018-02-26T12:00:00+09:00",
     "end_at":   "2018-02-26T12:30:00+09:00",
-    "is_privated": true,
-    "assignees": ["TUT:1000"]
+    "published_at": "2018-02-25T12:00:00+09:00",
+    "assignees": ["TUT:1000"],
+    "max_assignees": 1,
+    "max_attendees": 1,
+    "booking_deadline": 30,
+    "cancel_deadline":  10
   }' | jq .
 */
 func MakeCreateEventEndpoint(service usecase.CreateEvent) echox.HandlerFunc {
 	return func(c *echox.Context) error {
-		req := struct {
-			Category   event.Category    `json:"category"     binding:"required"`
-			Contents   event.Contents    `json:"contents"`
-			StartAt    event.StartAt     `json:"start_at"     binding:"required"`
-			EndAt      event.EndAt       `json:"end_at"       binding:"required,gtfield=StartAt"`
-			IsPrivated bool              `json:"is_privated"`
-			Assignees  event.AssigneeIDs `json:"assignees"    binding:"required,min=1"`
-		}{}
+		var req = struct {
+			usecase.CreateEventInput
+		}{
+			CreateEventInput: usecase.CreateEventInput{
+				PublishedAt: events.PublishedAt{
+					time.Now(),
+				},
+				MaxAssignees:    1,
+				MaxAttendees:    1,
+				BookingDeadline: 10,
+				CancelDeadline:  30,
+			},
+		}
 		if err := c.BindJSON(&req); err != nil {
 			return c.BadRequest(err)
 		}
 
-		output, err := service.Create(&usecase.CreateEventInput{
-			Category:     req.Category,
-			Contents:     req.Contents,
-			StartAt:      req.StartAt,
-			EndAt:        req.EndAt,
-			IsPrivated:   req.IsPrivated,
-			Assignees:    req.Assignees,
-			MinAssignees: 1,
-			MaxAssignees: 1,
-			MinAttendees: 1,
-			MaxAttendees: 1,
-			PublishedAt: event.PublishedAt{
-				time.Now(),
-			},
-			BookingDeadlineAt: event.BookingDeadlineAt{
-				req.StartAt.Add(-10 * time.Minute),
-			},
-			CancelDeadlineAt: event.CancelDeadlineAt{
-				req.StartAt.Add(-30 * time.Minute),
-			},
-		})
+		output, err := service.Create(
+			&req.CreateEventInput,
+		)
 		if err != nil {
 			return c.BadRequest(err)
 		}
 
 		return c.OK(&struct {
-			EventID    event.ID          `json:"event_id"`
-			Category   event.Category    `json:"category"`
-			Contents   event.Contents    `json:"contents,omitempty"`
-			StartAt    event.StartAt     `json:"start_at"`
-			EndAt      event.EndAt       `json:"end_at"`
-			IsPrivated bool              `json:"is_privated"`
-			Assignees  event.AssigneeIDs `json:"assignees,omitempty"`
-			Attendees  event.AttendeeIDs `json:"attendees,omitempty"`
+			EventID   events.ID          `json:"event_id"`
+			Category  events.Category    `json:"category"`
+			Tags      events.Tags        `json:"tags,omitempty"`
+			StartAt   events.StartAt     `json:"start_at"`
+			EndAt     events.EndAt       `json:"end_at"`
+			Assignees events.AssigneeIDs `json:"assignees,omitempty"`
+			Attendees events.AttendeeIDs `json:"attendees,omitempty"`
 		}{
-			EventID:    output.ID(),
-			Category:   output.Category(),
-			Contents:   output.Contents(),
-			StartAt:    output.StartAt(),
-			EndAt:      output.EndAt(),
-			IsPrivated: output.IsPrivated(),
-			Assignees:  output.AssigneeIDs(),
-			Attendees:  output.AttendeeIDs(),
+			EventID:   output.ID(),
+			Category:  output.Category(),
+			Tags:      output.Tags(),
+			StartAt:   output.TimeSlot().StartAt(),
+			EndAt:     output.TimeSlot().EndAt(),
+			Assignees: output.AssigneeIDs(),
+			Attendees: output.AttendeeIDs(),
 		})
 	}
 }
