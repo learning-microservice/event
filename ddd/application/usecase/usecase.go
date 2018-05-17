@@ -1,22 +1,27 @@
 package usecase
 
 import (
-	"github.com/learning-microservice/event/ddd/domain/context"
-	"github.com/learning-microservice/event/ddd/domain/model/events"
+	"github.com/learning-microservice/event/ddd/domain"
+	"github.com/learning-microservice/event/ddd/domain/model"
 )
 
 type Service interface {
+	FindEvent
 	CreateEvent
 }
 
 type service struct {
-	context.Transaction
-	eventRepos events.Repository
+	domain.TxContext
+	eventRepos  model.EventRepository
+	assignRepos model.AssignmentRepository
+	bookRepos   model.BookingRepository
 }
 
-func NewService(tx context.Transaction, eventRepos events.Repository) Service {
+func NewService(ctx domain.TxContext, repos model.Repositories) Service {
 	return &service{
-		Transaction: tx,
-		eventRepos:  eventRepos,
+		TxContext:   ctx,
+		eventRepos:  repos.EventRepository,
+		assignRepos: repos.AssignmentRepository,
+		bookRepos:   repos.BookingRepository,
 	}
 }

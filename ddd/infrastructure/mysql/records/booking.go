@@ -9,7 +9,7 @@ type Booking struct {
 	EventID    uint      `gorm:"not null"`
 	AttendeeID string    `gorm:"not null"`
 	BookedAt   time.Time `gorm:"type:datetime;not null"`
-	Content    string
+	IsDeleted  bool      `gorm:"-"`
 }
 
 func (*Booking) TableName() string {

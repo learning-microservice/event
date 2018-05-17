@@ -1,14 +1,14 @@
 package mysql
 
 import (
-	"github.com/learning-microservice/event/ddd/domain/context"
+	"github.com/learning-microservice/event/ddd/domain"
 )
 
 type txManager struct {
 	mySQL *mySQL
 }
 
-func (*txManager) WithTx(f func(context.Session) error) (err error) {
+func (*txManager) WithTx(f func(domain.Session) error) (err error) {
 	if err = lazyInit(); err != nil {
 		return
 	}
@@ -30,13 +30,13 @@ func (*txManager) WithTx(f func(context.Session) error) (err error) {
 	return
 }
 
-func (*txManager) WithReadOnly(f func(context.Session) error) (err error) {
+func (*txManager) WithReadOnly(f func(domain.Session) error) (err error) {
 	if err = lazyInit(); err != nil {
 		return
 	}
 	return f(cacheDB)
 }
 
-func NewTxManager() context.Transaction {
+func NewTxManager() domain.TxContext {
 	return &txManager{}
 }

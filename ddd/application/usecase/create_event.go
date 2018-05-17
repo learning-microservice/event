@@ -1,44 +1,47 @@
 package usecase
 
 import (
-	"github.com/learning-microservice/event/ddd/domain/context"
-	"github.com/learning-microservice/event/ddd/domain/model/events"
+	"github.com/learning-microservice/event/ddd/domain"
+	"github.com/learning-microservice/event/ddd/domain/model"
+	"github.com/learning-microservice/event/ddd/domain/model/shared/account"
+	"github.com/learning-microservice/event/ddd/domain/model/shared/event"
 )
 
 type CreateEvent interface {
-	Create(input *CreateEventInput) (*events.Event, error)
+	Create(input *CreateEventInput) (*model.Event, error)
 }
 
 type CreateEventInput struct {
-	Category        events.Category        `json:"category"         binding:"required"`
-	Tags            events.Tags            `json:"tags"`
-	StartAt         events.StartAt         `json:"start_at"         binding:"required"`
-	EndAt           events.EndAt           `json:"end_at"           binding:"required,gtfield=StartAt"`
-	PublishedAt     events.PublishedAt     `json:"published_at"`
-	Assignees       events.AssigneeIDs     `json:"assignees"        binding:"required,min=1"`
-	MaxAssignees    events.MaxAssignees    `json:"max_assignees"`
-	MaxAttendees    events.MaxAttendees    `json:"max_attendees"`
-	BookingDeadline events.BookingDeadline `json:"booking_deadline" binding:"omitempty,min=1`
-	CancelDeadline  events.CancelDeadline  `json:"cancel_deadline"  binding:"omitempty,min=1`
+	Category   event.Category `json:"category"    binding:"required"`
+	Tags       event.Tags     `json:"tags"`
+	StartAt    event.StartAt  `json:"start_at"    binding:"required"`
+	EndAt      event.EndAt    `json:"end_at"      binding:"required,gtfield=StartAt"`
+	AssigneeID account.ID     `json:"assignee_id" binding:"required"`
 }
 
-func (s *service) Create(input *CreateEventInput) (*events.Event, error) {
-	evt := events.New(
+func (s *service) Create(input *CreateEventInput) (*model.Event, error) {
+	evt := model.NewEvent(
 		input.Category,
 		input.Tags,
 		input.StartAt,
 		input.EndAt,
-		input.PublishedAt,
-		input.MaxAssignees,
-		input.MaxAttendees,
-		input.BookingDeadline,
-		input.CancelDeadline,
 	)
-	return evt, s.WithTx(func(sess context.Session) (err error) {
-		if err = s.assign(evt, input.Assignees)(sess); err != nil {
+	return evt, s.WithTx(func(ses domain.Session) (err error) {
+		// duplicate event for account timeslot
+		if s.eventRepos.ExistsBy(
+			input.AssigneeID,
+			evt.StartAt(),
+			evt.EndAt(),
+		)(ses) {
+			return ErrDuplicateEvent
+		}
+
+		// store event
+		if err = s.eventRepos.Store(evt)(ses); err != nil {
 			return
 		}
-		// store event
-		return s.eventRepos.Store(evt)(sess)
+
+		// assign event
+		return s.assign(evt, input.AssigneeID)(ses)
 	})
 }

@@ -9,6 +9,7 @@ type Assignment struct {
 	EventID    uint      `gorm:"not null"`
 	AssigneeID string    `gorm:"not null"`
 	AssignedAt time.Time `gorm:"type:datetime;not null"`
+	IsDeleted  bool      `gorm:"-"`
 }
 
 func (*Assignment) TableName() string {

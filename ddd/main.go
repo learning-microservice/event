@@ -21,10 +21,10 @@ func main() {
 	txContext := mysql.NewTxManager()
 
 	// repositories
-	eventRepos := mysql.NewEventRepositoryOnMySQL()
+	repositories := mysql.NewRepositories()
 
 	// service
-	service := usecase.NewService(txContext, eventRepos)
+	service := usecase.NewService(txContext, repositories)
 
 	// setup echo engine
 	engine := echox.New()
@@ -42,6 +42,9 @@ func main() {
 	// setup router
 	v1 := engine.Group("/v1")
 	{
+		// Find Event
+		v1.GET("/events/:event_id", echox.Ep(handler.MakeFindEventEndpoint(service)))
+
 		// Create Event
 		v1.POST("/events", echox.Ep(handler.MakeCreateEventEndpoint(service)))
 	}

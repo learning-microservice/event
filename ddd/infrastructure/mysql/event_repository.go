@@ -3,8 +3,11 @@ package mysql
 import (
 	"time"
 
-	"github.com/learning-microservice/event/ddd/domain/context"
-	"github.com/learning-microservice/event/ddd/domain/model/events"
+	"github.com/jinzhu/gorm"
+	"github.com/learning-microservice/event/ddd/domain"
+	"github.com/learning-microservice/event/ddd/domain/model"
+	"github.com/learning-microservice/event/ddd/domain/model/shared/account"
+	"github.com/learning-microservice/event/ddd/domain/model/shared/event"
 	"github.com/learning-microservice/event/ddd/infrastructure/mysql/records"
 )
 
@@ -12,50 +15,50 @@ import (
 // eventRepositoryOnMySQL
 ////////////////////////////////////////////
 
-type eventRepositoryOnMySQL struct {
-	events.Converter
+type eventRepository struct {
+	model.EventRepositoryRDBSupport
 }
 
-func (r *eventRepositoryOnMySQL) FindBy(id events.ID) func(context.Session) (*events.Event, error) {
-	return func(context.Session) (*events.Event, error) {
-		return nil, nil
+func (r *eventRepository) FindBy(id event.ID) func(domain.Session) (*model.Event, error) {
+	return func(ses domain.Session) (*model.Event, error) {
+		var (
+			mysql = ses.(*mySQL)
+		)
+		eventRecord, err := mysql.findBy(uint(id))
+		if err != nil {
+			return nil, err
+		}
+		return r.ToEventEntity(eventRecord), nil
 	}
 }
 
-func (r *eventRepositoryOnMySQL) ExistsBy(aid events.AccountID, slot events.TimeSlot) func(context.Session) bool {
-	return func(sess context.Session) bool {
+func (r *eventRepository) ExistsBy(aid account.ID, start event.StartAt, end event.EndAt) func(domain.Session) bool {
+	return func(sess domain.Session) bool {
 		var (
 			mysql = sess.(*mySQL)
 		)
-		return mysql.existsBy(aid.UID(), slot.StartAt().Time, slot.EndAt().Time)
+		return mysql.existsBy(string(aid), start.Time, end.Time)
 	}
 }
 
-func (r *eventRepositoryOnMySQL) Store(evt *events.Event) func(context.Session) error {
-	return func(sess context.Session) (err error) {
+func (r *eventRepository) Store(entity *model.Event) func(domain.Session) error {
+	return func(ses domain.Session) (err error) {
 		var (
-			mysql       = sess.(*mySQL)
-			eventRecord = r.ConvertToRecord(evt)
+			mysql       = ses.(*mySQL)
+			eventRecord = r.ToEventRecord(entity)
 		)
-		if evt.IsNew() {
+		if mysql.NewRecord(eventRecord) {
 			if err = mysql.createEvent(eventRecord); err != nil {
 				return
 			}
-		} else {
-			if err = mysql.updateEvent(eventRecord); err != nil {
-				return
-			}
 		}
-		if err = mysql.verifyVersion(eventRecord); err != nil {
-			return
-		}
-		*evt = *r.ConvertToEntity(eventRecord)
+		*entity = *r.ToEventEntity(eventRecord)
 		return
 	}
 }
 
-func (r *eventRepositoryOnMySQL) Delete(evt *events.Event) func(context.Session) error {
-	return func(context.Session) (err error) {
+func (r *eventRepository) Delete(entity *model.Event) func(domain.Session) error {
+	return func(domain.Session) (err error) {
 		// TODO delete event_bookins or event_cancels
 		// TODO delete event_assignments or event_unassignments
 		// TODO delete event_controls
@@ -67,6 +70,23 @@ func (r *eventRepositoryOnMySQL) Delete(evt *events.Event) func(context.Session)
 ////////////////////////////////////////////
 // Private gorm Functions
 ////////////////////////////////////////////
+
+func (db *mySQL) findBy(id uint) (*records.Event, error) {
+	var evt = &records.Event{
+		ID: id,
+	}
+	return evt, db.Preload(
+		"Assignment", func(db *gorm.DB) *gorm.DB {
+			return db.Table("event_assignment_view")
+		},
+	).Preload(
+		"Booking", func(db *gorm.DB) *gorm.DB {
+			return db.Table("event_booking_view")
+		},
+	).Find(
+		evt,
+	).Error
+}
 
 func (db *mySQL) existsBy(aid string, start, end time.Time) bool {
 	return !db.Where(
@@ -91,36 +111,16 @@ func (db *mySQL) createEvent(eventRecord *records.Event) (err error) {
 }
 
 func (db *mySQL) updateEvent(eventRecord *records.Event) (err error) {
-	// TODO create new event_assignments
-	for _, assign := range eventRecord.Assignments {
-		if db.NewRecord(&assign) {
-			if err = db.Create(&assign).Error; err != nil {
-				return
-			}
-		}
-	}
-	// TODO create new event_unassignments
-	for _, unassign := range eventRecord.Unassignments {
-		if db.NewRecord(&unassign) {
-			if err = db.Create(&unassign).Error; err != nil {
-				return
-			}
+	// TODO create new event_assignment
+	if db.NewRecord(&eventRecord.Assignment) {
+		if err = db.Create(&eventRecord.Assignment).Error; err != nil {
+			return
 		}
 	}
 	// TODO create new event bookings
-	for _, book := range eventRecord.Bookings {
-		if db.NewRecord(&book) {
-			if err = db.Create(&book).Error; err != nil {
-				return
-			}
-		}
-	}
-	// TODO create new event cancellations
-	for _, cancel := range eventRecord.Cancels {
-		if db.NewRecord(&cancel) {
-			if err = db.Create(&cancel).Error; err != nil {
-				return
-			}
+	if db.NewRecord(&eventRecord.Booking) {
+		if err = db.Create(&eventRecord.Booking).Error; err != nil {
+			return
 		}
 	}
 	return
@@ -150,17 +150,9 @@ func (db *mySQL) verifyVersion(eventRecord *records.Event) (err error) {
 			return
 		}
 		if ret.RowsAffected == 0 {
-			return events.ErrAlreadyModified
+			return model.ErrAlreadyModified
 		}
 	}
 	eventRecord.Version = control.Version
 	return
-}
-
-////////////////////////////////////////////
-// Public Static Functions
-////////////////////////////////////////////
-
-func NewEventRepositoryOnMySQL() events.Repository {
-	return &eventRepositoryOnMySQL{}
 }

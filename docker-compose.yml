@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  portainer:
+    image: portainer/portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - 9000:9000
+
+  mysql:
+    image: mysql:5.7
+#    volumes:
+#      - ./mysql/init:/docker-entrypoint-initdb.d
+#      - mysql-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ALLOW_EMPTY_PASSWORD=N
+      - MYSQL_USER=hoge
+      - MYSQL_PASSWORD=hoge
+      - MYSQL_DATABASE=localdb
+    ports:
+      - 3306:3306
+
+volumes:
+  portainer-data:
+    driver: local
