@@ -1,4 +1,4 @@
-package mysql
+package rdb
 
 import (
 	"github.com/learning-microservice/event/ddd/domain/model"

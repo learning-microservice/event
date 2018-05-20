@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/learning-microservice/event/ddd/domain/model/shared/account"
-	"github.com/learning-microservice/event/ddd/domain/model/shared/event"
+	"github.com/learning-microservice/event/ddd/domain/shared/account"
+	"github.com/learning-microservice/event/ddd/domain/shared/event"
 )
 
 ////////////////////////////////////////////
@@ -52,12 +52,18 @@ func (e *Event) Booking() Booking {
 }
 
 func (e *Event) Assign(assigneeID account.ID) (err error) {
-	e.assignment = newAssignment(e.id, assigneeID)
+	e.assignment = Assignment{
+		eventID:    e.id,
+		assigneeID: assigneeID,
+	}
 	return
 }
 
 func (e *Event) Book(attendeeID account.ID) (err error) {
-	e.booking = newBooking(e.id, attendeeID)
+	e.booking = Booking{
+		eventID:    e.id,
+		attendeeID: attendeeID,
+	}
 	return
 }
 

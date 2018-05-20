@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/learning-microservice/core/echox"
 	"github.com/learning-microservice/event/ddd/application/usecase"
-	"github.com/learning-microservice/event/ddd/domain/model/shared/event"
+	"github.com/learning-microservice/event/ddd/domain/shared/event"
 )
 
 /*

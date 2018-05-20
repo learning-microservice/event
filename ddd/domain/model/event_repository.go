@@ -2,8 +2,8 @@ package model
 
 import (
 	"github.com/learning-microservice/event/ddd/domain"
-	"github.com/learning-microservice/event/ddd/domain/model/shared/account"
-	"github.com/learning-microservice/event/ddd/domain/model/shared/event"
+	"github.com/learning-microservice/event/ddd/domain/shared/account"
+	"github.com/learning-microservice/event/ddd/domain/shared/event"
 )
 
 type EventRepository interface {

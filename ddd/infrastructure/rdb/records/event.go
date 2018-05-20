@@ -10,11 +10,10 @@ type Event struct {
 	Tags     []byte    `gorm:"type:json"`
 	StartAt  time.Time `gorm:"type:datetime;not null"`
 	EndAt    time.Time `gorm:"type:datetime;not null"`
-	Version  uint      `gorm:"-"`
 
-	Assignment Assignment `gorm:"-"`
-	Booking    Booking    `gorm:"-"`
-	Control    Control    `gorm:"-"`
+	Assignments Assignments `gorm:"-"`
+	Bookings    Bookings    `gorm:"-"`
+	Control     Control     `gorm:"-"`
 }
 
 func (*Event) TableName() string {

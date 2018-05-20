@@ -1,4 +1,4 @@
-package mysql
+package rdb
 
 import (
 	//"github.com/jinzhu/gorm"
@@ -15,15 +15,19 @@ type bookingRepository struct {
 }
 
 func (r *bookingRepository) Store(entity *model.Booking) func(domain.Session) error {
-	return func(ses domain.Session) error {
+	return func(ses domain.Session) (err error) {
 		var (
-			mysql      = ses.(*mySQL)
-			bookRecord = r.ToBookingRecord(entity)
+			mysql       = ses.(*mySQL)
+			bookRecords = r.ToBookingRecords(entity)
 		)
-		if mysql.NewRecord(bookRecord) {
-			return mysql.Create(bookRecord).Error
+		for _, record := range bookRecords {
+			if mysql.NewRecord(&record) {
+				if err = mysql.Create(&record).Error; err != nil {
+					return
+				}
+			}
 		}
-		return nil
+		return
 	}
 }
 

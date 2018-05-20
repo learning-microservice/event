@@ -1,4 +1,4 @@
-package mysql
+package rdb
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/learning-microservice/event/ddd/infrastructure/mysql/records"
+	"github.com/learning-microservice/event/ddd/infrastructure/rdb/records"
 )
 
 var (

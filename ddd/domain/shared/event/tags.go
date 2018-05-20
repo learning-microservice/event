@@ -14,3 +14,14 @@ func (t Tags) JSON() []byte {
 		return []byte("[]")
 	}
 }
+
+func ToTags(data []byte) Tags {
+	var t Tags
+	if len(data) > 0 {
+		if err := json.Unmarshal(data, &t); err != nil {
+			// TODO warning log ?
+			panic(err)
+		}
+	}
+	return t
+}

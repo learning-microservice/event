@@ -7,7 +7,7 @@ import (
 	"github.com/learning-microservice/core/echox"
 	"github.com/learning-microservice/core/validator"
 	"github.com/learning-microservice/event/ddd/application/usecase"
-	"github.com/learning-microservice/event/ddd/infrastructure/mysql"
+	"github.com/learning-microservice/event/ddd/infrastructure/rdb"
 	"github.com/learning-microservice/event/ddd/interfaces/rest/handler"
 	"github.com/tylerb/graceful"
 )
@@ -18,10 +18,10 @@ func main() {
 	os.Setenv("DB_AUTO_MIGRATE", "true")
 
 	// Mysql Transaction Context
-	txContext := mysql.NewTxManager()
+	txContext := rdb.NewTxManager()
 
 	// repositories
-	repositories := mysql.NewRepositories()
+	repositories := rdb.NewRepositories()
 
 	// service
 	service := usecase.NewService(txContext, repositories)

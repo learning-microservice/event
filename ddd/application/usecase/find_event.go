@@ -3,7 +3,7 @@ package usecase
 import (
 	"github.com/learning-microservice/event/ddd/domain"
 	"github.com/learning-microservice/event/ddd/domain/model"
-	"github.com/learning-microservice/event/ddd/domain/model/shared/event"
+	"github.com/learning-microservice/event/ddd/domain/shared/event"
 )
 
 type FindEvent interface {
