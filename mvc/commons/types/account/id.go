@@ -4,12 +4,20 @@ import (
 	"database/sql/driver"
 )
 
+// ID is ...
 type ID string
 
+// Value is ...
 func (id ID) Value() (driver.Value, error) {
 	return string(id), nil
 }
 
-func (id ID) IsNotEmpty() bool {
+// IsEmpty is ...
+func (id ID) IsEmpty() bool {
 	return string(id) != ""
+}
+
+// IsNotEmpty is ...
+func (id ID) IsNotEmpty() bool {
+	return !id.IsEmpty()
 }

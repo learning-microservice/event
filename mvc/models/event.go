@@ -8,6 +8,7 @@ import (
 	"github.com/learning-microservice/event/mvc/commons/types/event"
 )
 
+// Event is ...
 type Event struct {
 	ID          event.ID       `gorm:"primary_key"`
 	UID         event.UID      `gorm:"type:varchar(36);not null"`
@@ -25,11 +26,13 @@ type Event struct {
 	//Control     Control     `gorm:"-"`
 }
 
+// TableName is ...
 func (*Event) TableName() string {
 	return "events"
 }
 
-func (e *Event) MarshalJSONss() ([]byte, error) {
+// MarshalJSON is ...
+func (e *Event) MarshalJSON() ([]byte, error) {
 	var (
 		assigneeID account.ID
 		attendeeID account.ID

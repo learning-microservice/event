@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 )
 
+// ApplicationError is ...
 type ApplicationError interface {
 	error
 	Cause() error
@@ -70,6 +71,7 @@ func newApplicationError(errType Type, field string, value interface{}, msg stri
 // AlreadyModifiedError
 ////////////////////////////////////////////
 
+// NewAlreadyModifiedError is ...
 func NewAlreadyModifiedError(field string, value interface{}, msg string) error {
 	return newApplicationError(AlreadyModifiedErrorType, field, value, msg, nil)
 }
@@ -78,6 +80,7 @@ func NewAlreadyModifiedError(field string, value interface{}, msg string) error 
 // NotFoundError
 ////////////////////////////////////////////
 
+// NewNotFoundError is ...
 func NewNotFoundError(field string, value interface{}, msg string) error {
 	return newApplicationError(NotFoundErrorType, field, value, msg, nil)
 }
@@ -86,6 +89,7 @@ func NewNotFoundError(field string, value interface{}, msg string) error {
 // ValidationError
 ////////////////////////////////////////////
 
+// NewValidationError is ...
 func NewValidationError(field string, value interface{}, msg string) error {
 	return newApplicationError(ValidationErrorType, field, value, msg, nil)
 }

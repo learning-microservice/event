@@ -8,6 +8,7 @@ import (
 	"github.com/learning-microservice/event/mvc/commons/types/event"
 )
 
+// Assignments is ...
 type Assignments []*Assignment
 
 func (as Assignments) existsAttendee(assigneeID account.ID) bool {
@@ -19,6 +20,7 @@ func (as Assignments) existsAttendee(assigneeID account.ID) bool {
 	return false
 }
 
+// Assignment is ...
 type Assignment struct {
 	ID         uint       `gorm:"primary_key"`
 	EventID    event.ID   `gorm:"not null"`
@@ -27,10 +29,12 @@ type Assignment struct {
 	OperatorID string     `gorm:"type:varchar(36);not null"`
 }
 
+// TableName is ...
 func (*Assignment) TableName() string {
 	return "event_assignments"
 }
 
+// Assign is ...
 func (e *Event) Assign(assignment *Assignment) error {
 	// TODO validate deadline
 
@@ -44,7 +48,7 @@ func (e *Event) Assign(assignment *Assignment) error {
 	}
 
 	// validate max assignees
-	if len(e.Bookings) == MAX_ASSIGNEES {
+	if len(e.Bookings) == maxAssignees {
 		return errors.NewValidationError(
 			"assignee_id",
 			assignment.AssigneeID,
@@ -61,5 +65,5 @@ func (e *Event) Assign(assignment *Assignment) error {
 }
 
 const (
-	MAX_ASSIGNEES = 1
+	maxAssignees = 1
 )

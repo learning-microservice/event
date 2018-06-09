@@ -4,9 +4,8 @@ import (
 	"os"
 	"sync"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/learning-microservice/event/mvc/models"
 )
 
@@ -15,11 +14,23 @@ var (
 	cacheDB *gorm.DB
 )
 
+// DB is ...
 func DB() *gorm.DB {
 	if err := lazyInit(); err != nil {
 		panic(err)
 	}
 	return cacheDB
+}
+
+// IsMySQLError is ...
+func IsMySQLError(err error) bool {
+	if _, ok := err.(*mysql.MySQLError); ok {
+		//log.Printf("Number: %d", mysqlErr.Number)
+		//log.Printf("Message: %s", mysqlErr.Message)
+		//log.Printf("Error(): %s", mysqlErr.Error())
+		return true
+	}
+	return false
 }
 
 func lazyInit() (err error) {

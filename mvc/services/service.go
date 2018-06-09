@@ -13,19 +13,24 @@ var (
 	now = time.Now
 )
 
+// Service is ...
 type Service interface {
 	CreateEventService
 	UpdateEventService
 	FindEventService
 	BookEventService
+	CancelEventService
 	DeleteEventService
 	SearchEventService
 }
 
+// NewService is ...
 func NewService() Service {
-	return &service{
-		withTx:  db.WithTx,
-		nextUID: generator.NextUID,
+	return &logging{
+		next: &service{
+			withTx:  db.WithTx,
+			nextUID: generator.NextUID,
+		},
 	}
 }
 

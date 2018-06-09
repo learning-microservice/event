@@ -11,6 +11,19 @@ services:
     ports:
       - 9000:9000
 
+  event:
+    build:
+      context: .
+    environment:
+      - DB_ADDRESS=root:password@tcp(mysql:3306)/localdb?charset=utf8&parseTime=True&loc=Local
+      - DB_DEBUG=true
+      - DB_AUTO_MIGRATE=true
+    restart: always
+    ports:
+      - 19000:19000
+    networks:
+      - appnet
+
   mysql:
     image: mysql:5.7
 #    volumes:
@@ -24,7 +37,13 @@ services:
       - MYSQL_DATABASE=localdb
     ports:
       - 3306:3306
+    networks:
+      - appnet
 
 volumes:
   portainer-data:
     driver: local
+
+networks:
+  appnet:
+    driver: bridge

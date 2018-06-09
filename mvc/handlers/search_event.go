@@ -28,4 +28,5 @@ func makeSearchEventEndpoint(service services.SearchEventService) gin.HandlerFun
 	}
 }
 
+// SearchEventEndpoint is ...
 var SearchEventEndpoint = makeSearchEventEndpoint(service)

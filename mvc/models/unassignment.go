@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Unassignment is ...
 type Unassignment struct {
 	ID           uint      `gorm:"primary_key"`
 	AssignmentID uint      `gorm:"not null"`
@@ -12,6 +13,7 @@ type Unassignment struct {
 	OperatorID   string    `gorm:"not null"`
 }
 
+// TableName is ...
 func (*Unassignment) TableName() string {
 	return "event_unassignments"
 }

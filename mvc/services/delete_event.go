@@ -9,14 +9,17 @@ import (
 	"github.com/learning-microservice/event/mvc/models"
 )
 
+// DeleteEventService is ...
 type DeleteEventService interface {
 	Delete(context.Context, *DeleteEventInput) (*models.Event, error)
 }
 
+// DeleteEventInput is ...
 type DeleteEventInput struct {
 	UID event.UID `json:"_" binding:"required"`
 }
 
+// Delete is ...
 func (s *service) Delete(ctx context.Context, input *DeleteEventInput) (*models.Event, error) {
 	var (
 		evt         *models.Event

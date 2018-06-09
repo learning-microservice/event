@@ -10,15 +10,18 @@ import (
 	"github.com/learning-microservice/event/mvc/models"
 )
 
+// BookEventService is ...
 type BookEventService interface {
 	Book(context.Context, *BookEventInput) (*models.Event, error)
 }
 
+// BookEventInput is ...
 type BookEventInput struct {
 	UID        event.UID  `json:"_"           binding:"required"`
 	AttendeeID account.ID `json:"attendee_id" binding:"required"`
 }
 
+// Book is ...
 func (s *service) Book(ctx context.Context, input *BookEventInput) (*models.Event, error) {
 	var (
 		evt     *models.Event

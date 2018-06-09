@@ -10,14 +10,17 @@ import (
 	"github.com/learning-microservice/event/mvc/models"
 )
 
+// FindEventService is ...
 type FindEventService interface {
 	Find(context.Context, *FindEventInput) (*models.Event, error)
 }
 
+// FindEventInput is ...
 type FindEventInput struct {
 	UID event.UID `json:"id" binding:"required"`
 }
 
+// Find is ...
 func (s *service) Find(ctx context.Context, input *FindEventInput) (*models.Event, error) {
 	return findBy(input.UID, productCode(ctx))(db.DB())
 }

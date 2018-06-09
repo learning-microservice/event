@@ -31,4 +31,5 @@ func makeDeleteEventEndpoint(service services.DeleteEventService) gin.HandlerFun
 	}
 }
 
+// DeleteEventEndpoint is ...
 var DeleteEventEndpoint = makeDeleteEventEndpoint(service)

@@ -1,0 +1,73 @@
+# Makefile for event microservice
+
+.DEFAULT_GOAL := all
+
+# -----------------------------------------------------------------
+#    ENV VARIABLE
+# -----------------------------------------------------------------
+
+NAME      := event
+VERSION   := v0.1.0 #$(shell git describe --tags --abbrev=0)
+REVISION  := $(shell git rev-parse --short HEAD)
+
+SOURCEDIR := ./mvc
+SOURCES   := $(shell find $(SOURCEDIR) -type f -name '*.go')
+LDFLAGS   := -ldflags="-s -w -X \"main.Version=$(VERSION)\" -X \"main.Revision=$(REVISION)\" -extldflags \"-static\""
+NOVENDOR  := $(shell go list ./... | grep -v vendor)
+
+BUILD_OPTS := -a -tags netgo -installsuffix netgo $(LDFLAGS) -o bin/$(NAME) $(SOURCEDIR)
+
+.PHONY: $(/bin/bash egrep -o ^[a-zA-Z_-]+: $(MAKEFILE_LIST) | sed 's/://')
+
+all: setup deps lint test build ## setup & deps & lint & test & build
+
+setup: ## Setup dev tool
+	go get -u github.com/golang/dep/cmd/dep
+	go get -u github.com/golang/lint/golint
+	go get -u golang.org/x/tools/cmd/goimports
+
+build: $(SOURCES) ## Build binary
+	go build $(BUILD_OPTS)
+
+run: ## Run api server
+	go run $(SOURCEDIR)/main.go
+
+test: ## Run all the tests
+	@go test -coverpkg=$(SOURCEDIR)/... -v $(NOVENDOR)
+
+lint: ## Code check
+	@golint -set_exit_status $(SOURCEDIR)/...
+	@go vet $(SOURCEDIR)/...
+
+deps: ## Run dep ensure and prune
+	dep ensure -v
+	dep prune -v
+
+update-deps: ## Run dep ensure update
+	dep ensure -update -v
+	
+clean: ## Remove temporary files
+	go clean
+	rm -rf bin/*
+	rm -rf vendor/*
+
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+
+###  append
+
+install:
+	go install $(LDFLAGS) $(SOURCEDIR)
+
+release: ## Git tag and push version
+	git tag $(VERSION)
+	git push origin $(VERSION)
+
+
+docker-build:
+	docker build -t $(DOCKER_IMAGE) .
+
+
+build-linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(BUILD_OPTS)

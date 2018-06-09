@@ -13,10 +13,12 @@ import (
 	"github.com/learning-microservice/event/mvc/models"
 )
 
+// SearchEventService is ...
 type SearchEventService interface {
 	Search(context.Context, *SearchEventInput) ([]*models.Event, error)
 }
 
+// SearchEventInput is ...
 type SearchEventInput struct {
 	Category   event.Category `json:"category"    form:"category"`
 	Tags       event.Tags     `json:"tags"        form:"tags"`
@@ -37,6 +39,7 @@ func (s *SearchEventInput) parseOrders() (orders []string) {
 	return
 }
 
+// Search is ...
 func (s *service) Search(ctx context.Context, input *SearchEventInput) ([]*models.Event, error) {
 	var list []*models.Event
 	err := db.DB().Scopes(

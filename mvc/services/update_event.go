@@ -9,15 +9,18 @@ import (
 	"github.com/learning-microservice/event/mvc/models"
 )
 
+// UpdateEventService is ...
 type UpdateEventService interface {
 	Update(context.Context, *UpdateEventInput) (*models.Event, error)
 }
 
+// UpdateEventInput is ...
 type UpdateEventInput struct {
 	UID  event.UID  `json:"_"   binding:"required"`
 	Tags event.Tags `json:"tags"`
 }
 
+// Update is ...
 func (s *service) Update(ctx context.Context, input *UpdateEventInput) (*models.Event, error) {
 	var (
 		evt         *models.Event

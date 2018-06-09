@@ -8,17 +8,23 @@ import (
 	"github.com/learning-microservice/event/mvc/commons/types/event"
 )
 
+// Bookings is ...
 type Bookings []*Booking
 
 func (bs Bookings) existsAttendee(attendeeID account.ID) bool {
-	for _, b := range bs {
-		if b.AttendeeID == attendeeID {
-			return true
-		}
-	}
-	return false
+	return bs.findAttendee(attendeeID) != nil
 }
 
+func (bs Bookings) findAttendee(attendeeID account.ID) *Booking {
+	for _, b := range bs {
+		if b.AttendeeID == attendeeID {
+			return b
+		}
+	}
+	return nil
+}
+
+// Booking is ...
 type Booking struct {
 	ID         uint       `gorm:"primary_key"`
 	EventID    event.ID   `gorm:"not null"`
@@ -27,10 +33,12 @@ type Booking struct {
 	OperatorID string     `gorm:"not null"`
 }
 
+// TableName is ...
 func (*Booking) TableName() string {
 	return "event_bookings"
 }
 
+// Book is ...
 func (e *Event) Book(booking *Booking) error {
 	// TODO validate deadline
 
@@ -44,7 +52,7 @@ func (e *Event) Book(booking *Booking) error {
 	}
 
 	// validate max attendees
-	if len(e.Bookings) == MAX_ATTENDEES {
+	if len(e.Bookings) == maxAttendees {
 		return errors.NewValidationError(
 			"attendee_id",
 			booking.AttendeeID,
@@ -61,5 +69,5 @@ func (e *Event) Book(booking *Booking) error {
 }
 
 const (
-	MAX_ATTENDEES = 1
+	maxAttendees = 1
 )

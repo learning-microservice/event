@@ -32,8 +32,9 @@ func makeCreateEventEndpoint(service services.CreateEventService) gin.HandlerFun
 			handleError(c, err)
 			return
 		}
-		c.JSON(http.StatusOK, output)
+		c.JSON(http.StatusCreated, output)
 	}
 }
 
+// CreateEventEndpoint is ...
 var CreateEventEndpoint = makeCreateEventEndpoint(service)

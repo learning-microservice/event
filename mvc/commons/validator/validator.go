@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"sync"
@@ -13,10 +12,12 @@ import (
 	en_translations "gopkg.in/go-playground/validator.v9/translations/en"
 )
 
+// NewStructValidator is ...
 func NewStructValidator() StructValidator {
 	return &structValidator{}
 }
 
+// StructValidator is ...
 type StructValidator interface {
 	Validate(obj interface{}) error
 	ValidateStruct(obj interface{}) error
@@ -44,7 +45,7 @@ func (v *structValidator) ValidateStruct(obj interface{}) error {
 			//	err:   err,
 			//	trans: v.trans,
 			//}
-			var validatorErrors ValidatorErrors
+			var validatorErrors Errors
 			for _, e := range err.(validator.ValidationErrors) {
 				validatorErrors = append(validatorErrors, errors.NewValidationError(
 					e.Field(),
@@ -88,28 +89,10 @@ func kindOfData(data interface{}) reflect.Kind {
 	return valueType
 }
 
-type ValidatorErrors []error
+// Errors is ...
+type Errors []error
 
-func (e *ValidatorErrors) Error() string {
+// Error is ...
+func (e *Errors) Error() string {
 	return "validation error"
-}
-
-type validatorError struct {
-	err   error
-	trans ut.Translator
-}
-
-func (v *validatorError) Error() string {
-	if v.err != nil {
-		return v.err.Error()
-	}
-	return "unknown error"
-}
-
-func (v *validatorError) MarshalJSON() ([]byte, error) {
-	var messages []string
-	for _, e := range v.err.(validator.ValidationErrors) {
-		messages = append(messages, e.Translate(v.trans))
-	}
-	return json.Marshal(messages)
 }

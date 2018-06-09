@@ -31,4 +31,5 @@ func makeFindEventEndpoint(service services.FindEventService) gin.HandlerFunc {
 	}
 }
 
+// FindEventEndpoint is ...
 var FindEventEndpoint = makeFindEventEndpoint(service)

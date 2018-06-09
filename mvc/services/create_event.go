@@ -11,10 +11,12 @@ import (
 	"github.com/learning-microservice/event/mvc/models"
 )
 
+// CreateEventService is ...
 type CreateEventService interface {
 	Create(context.Context, *CreateEventInput) (*models.Event, error)
 }
 
+// CreateEventInput is ...
 type CreateEventInput struct {
 	Category   event.Category `json:"category"    binding:"required"`
 	Tags       event.Tags     `json:"tags"`
@@ -23,6 +25,7 @@ type CreateEventInput struct {
 	AssigneeID account.ID     `json:"assignee_id" binding:"required"`
 }
 
+// Create is ...
 func (s *service) Create(ctx context.Context, input *CreateEventInput) (*models.Event, error) {
 	var (
 		evt         *models.Event

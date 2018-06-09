@@ -35,4 +35,5 @@ func makeUpdateEventEndpoint(service services.UpdateEventService) gin.HandlerFun
 	}
 }
 
+// UpdateEventEndpoint is ...
 var UpdateEventEndpoint = makeUpdateEventEndpoint(service)

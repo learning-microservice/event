@@ -4,8 +4,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// TxFunc is ...
 type TxFunc func(*gorm.DB) error
 
+// WithTx is ...
 func WithTx(f TxFunc) (err error) {
 	if err = lazyInit(); err != nil {
 		return
@@ -28,6 +30,7 @@ func WithTx(f TxFunc) (err error) {
 	return
 }
 
+// WithReadOnly is ...
 func WithReadOnly(f func(*gorm.DB) error) (err error) {
 	if err = lazyInit(); err != nil {
 		return

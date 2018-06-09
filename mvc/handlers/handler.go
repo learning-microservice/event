@@ -25,7 +25,7 @@ type errorResponse struct {
 }
 
 func handleError(c *gin.Context, err error) {
-	if validatorError, ok := err.(*validator.ValidatorErrors); ok {
+	if validatorError, ok := err.(*validator.Errors); ok {
 		c.JSON(http.StatusBadRequest, errorResponse{
 			Message: validatorError.Error(),
 			Errors:  validatorError,
